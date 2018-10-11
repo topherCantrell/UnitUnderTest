@@ -10,3 +10,15 @@ The Ethernet cross-bar allows the test harness to plug/unplug two network jacks 
 The powered-outlet allows the test harness to perform a hard power-cycle while testing.
 
 ![](https://github.com/topherCantrell/UnitUnderTest/blob/master/art/schematic.jpg)
+
+# Enabling the Console on the UUT
+
+Do this once on a systemd box:
+```
+systemctl enable serial-getty@ttyUSB0
+reboot
+
+or maybe this instead of reboot
+
+sudo systemctl daemon-reload
+```
