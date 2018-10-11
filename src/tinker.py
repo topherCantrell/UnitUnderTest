@@ -1,19 +1,47 @@
-import serial
+import serial_shell
+import rest
 
-"""
+print('# Testing NameServers')
 
-The "Login/Password: " prompts do not have an end-line
+# Open a serial connection to the unit under test
+con = serial_shell.Shell('COM7')
 
-"""
+# Get the list of nameservers (ignore the prompt status)
+_status,output = con.execute('cat /etc/resolv.conf | grep nameserver')
+# Parse the output from the shell
+ns = output[0][11:].strip().split(' ')
 
-ser = serial.Serial(port='COM7', baudrate=115200, timeout=2)
+# Open a connection to the Redfish server
+red = rest.Rest('https://10.207.15.119','admin','admin')
 
-ser.write(b'\n')
-#ser.write(b'root\n')
+# Get the list of nameservers
+json = red.get('/redfish/v1/Managers/1/EthernetInterfaces/enp2s0')
+ns_red = json['NameServers']
 
-#ser.write(b'ps\n')
+# Compare the actual list with what Redfish says
+if ns!=ns_red:
+    raise Exception('Redfish does not match the system:'+str(ns_red)+':'+str(ns)+':')
+print('OK Redfish list of servers matches the system config file.')
 
-while True:
-    g = ser.readline()
-    print(g)
-    
+# Change the list of nameservers
+print('Changing the list of NameServers to [1.2.3.4]')
+red.patch('/redfish/v1/Managers/1/EthernetInterfaces/enp2s0',
+    {
+        'NameServers' : ['1.2.3.4']
+    }
+)
+
+# Reboot the box
+con.execute('reboot')
+
+# Wait for the unit to come back up
+con.wait_for_prompt()
+
+# Get the nameservers again
+json = red.get('/redfish/v1/Managers/1/EthernetInterfaces/enp2s0')
+ns_red = json['NameServers']
+
+if ns_red!=['1.2.3.4']:
+    raise Exception('Nameservers do not match')
+
+print('OK NameServers changed to [1.2.3.4]')
