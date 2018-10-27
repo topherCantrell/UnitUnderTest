@@ -22,3 +22,7 @@ or maybe this instead of reboot
 
 sudo systemctl daemon-reload
 ```
+# Parts
+
+Ethernet Plug
+https://www.sparkfun.com/products/8534
