@@ -56,8 +56,9 @@ def write_report(report):
         fd.write(report.encode())
         
 def type_key(k):
-    write_report(KEY_MAP[k])
-    write_report(NULL_CHAR*8)
+    if k in KEY_MAP:
+        write_report(KEY_MAP[k])
+        write_report(NULL_CHAR*8)
         
 while True:
     s = ser.read(1).decode()
